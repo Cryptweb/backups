@@ -1562,28 +1562,6 @@ function lib:Window(text, preset, closebind)
             Tab.CanvasSize = UDim2.new(0, 0, 0, TabLayout.AbsoluteContentSize.Y)
         end
         function tabcontent:Bind(text, keypreset, callback)
-             local blacklisted = {
-                 Return = true,
-                 Space = true,
-                 Tab = true,
-                 W = true,
-                 A = true,
-                 S = true,
-                 D = true,
-                 Unknown = true
-             }
-
-             local shortNames = {
-                 RightControl = "RCtrl",
-                 LeftControl = "LCtrl",
-                 LeftShift = "LShift",
-                 RightShift = "RShift",
-                 MouseButton1 = "M1",
-                 MouseButton2 = "M2",
-                 LeftAlt = "LAlt",
-                 RightAlt = "RAlt"
-            }
-            
             local binding = false
             local Key = keypreset.Name
             local Bind = Instance.new("TextButton")
@@ -1636,8 +1614,8 @@ function lib:Window(text, preset, closebind)
                     BindText.Text = "..."
                     binding = true
                     local inputwait = game:GetService("UserInputService").InputBegan:wait()
-                    if (not blacklisted[inputwait.KeyCode.Name]) then
-                        BindText.Text = shortNames[inputwait.KeyCode.Name] or inputwait.KeyCode.Name
+                    if inputwait.KeyCode.Name ~= "Unknown" then
+                        BindText.Text = inputwait.KeyCode.Name
                         Key = inputwait.KeyCode.Name
                         binding = false
                     else
@@ -1646,13 +1624,15 @@ function lib:Window(text, preset, closebind)
                 end
             )
 
-            game:GetService('UserInputService').InputBegan:Connect(function(input, focused)
-                if (not focused) then
-                    if (input.UserInputType == Key) then
-                        callback(Key)
+            game:GetService("UserInputService").InputBegan:connect(
+                function(current, pressed)
+                    if not pressed then
+                        if current.KeyCode.Name == Key and binding == false then
+                            callback(Key)
+                        end
                     end
                 end
-            end)
+            )
         end
         return tabcontent
     end
